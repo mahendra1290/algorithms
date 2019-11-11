@@ -221,7 +221,7 @@ class DirectedGraph : public Graph {
         }
 
         int *topologicalSort(); 
-        Graph getTranspose();
+        DirectedGraph getTranspose();
         void printStronglyConnectedComponent();
 };
 
@@ -237,7 +237,7 @@ int *DirectedGraph::topologicalSort() {
 }
 
 DirectedGraph DirectedGraph::getTranspose() {
-    UndirectedGraph transposeGraph = UndirectedGraph(maxVertices);
+    DirectedGraph transposeGraph = DirectedGraph(maxVertices);
     for (int i = 1; i <= maxVertices; i++) {
         for (int u : adjancyList[i]) {
             transposeGraph.addEdge(u, i);
@@ -249,7 +249,7 @@ DirectedGraph DirectedGraph::getTranspose() {
 void DirectedGraph::printStronglyConnectedComponent() {
     vector<Vertex> dfs = dfsTraversal();
     sort(dfs.begin(), dfs.end(), Vertex::compareByFinishingTime);
-    UndirectedGraph transpose = getTranspose();
+    DirectedGraph transpose = getTranspose();
     bool visited[maxVertices + 1];
     for (int i = 1; i <= maxVertices; i++) {
         visited[i] = false;
