@@ -83,6 +83,7 @@ class Graph {
         vector<Edge> edges;
         void dfsVisit(int u, int &time, Vertex *vertices);
     public:
+        void dfsVisit(int u, bool visited[]);
         Graph();
         Graph(int maxVertices);
         bool hasEdgeBetween(int u, int v);
@@ -91,7 +92,10 @@ class Graph {
         void printAdjancyList();
         vector<Vertex> bfsTraversal(int source);
         vector<Vertex> dfsTraversal();
+        int *dfsTraversal(int source);
         int *topologicalSort(); 
+        Graph getTranspose();
+        void printStronglyConnectedComponent();
 };
 
 
@@ -117,7 +121,6 @@ bool Graph::hasEdgeBetween(int u, int v) {
 void Graph::addEdge(int u, int v) {
     if (!hasEdgeBetween(u, v)) {
         adjancyList[u].push_back(v);
-        //adjancyList[v].push_back(u);
         Edge e = createEdge(u, v, 0);
         edges.push_back(e);
     }
@@ -126,7 +129,6 @@ void Graph::addEdge(int u, int v) {
 void Graph::addEdge(int u, int v, int weight) {
     if (!hasEdgeBetween(u, v) && u != v) {
         adjancyList[u].push_back(v);
-        adjancyList[v].push_back(u);
         Edge e = createEdge(u, v, weight);
         edges.push_back(e);
     }
@@ -166,7 +168,7 @@ vector<Vertex> Graph::bfsTraversal(int source) {
         bfs.push_back(vertices[u]);
         vertices[u].setExplored();
     }
-    cout << "\n";
+    cout << endl;
     delete [] vertices;
     return bfs;
 }
@@ -185,6 +187,7 @@ vector<Vertex> Graph::dfsTraversal() {
         dfs.push_back(vertices[i]);
     }
     delete [] vertices;
+    cout << endl;
     return dfs;
 }
 
@@ -204,6 +207,25 @@ void Graph::dfsVisit(int u, int &time, Vertex *vertices) {
     vertices[u].finishingTime = time;
 }
 
+int *Graph::dfsTraversal(int source) {
+    bool visited[maxVertices];
+    for (int i = 1; i <= maxVertices; i++) {
+        visited[i] = false;
+    }
+    dfsVisit(source, visited);
+    cout << endl;
+}
+
+void Graph::dfsVisit(int u, bool visited[]) {
+    visited[u] = true;
+    cout << u << " ";
+    for (int v : adjancyList[u]) {
+        if (!visited[v]) {
+            dfsVisit(v, visited);
+        }
+    }
+}
+
 int *Graph::topologicalSort() {
     vector<Vertex> dfsOrder = dfsTraversal();
     sort(dfsOrder.begin(), dfsOrder.end(), Vertex::compareByFinishingTime);
@@ -215,9 +237,35 @@ int *Graph::topologicalSort() {
     return vertices;
 }
 
+Graph Graph::getTranspose() {
+    Graph transposeGraph = Graph(maxVertices);
+    for (int i = 1; i <= maxVertices; i++) {
+        for (int u : adjancyList[i]) {
+            transposeGraph.addEdge(u, i);
+        }
+    }
+    return transposeGraph;
+}
+
+void Graph::printStronglyConnectedComponent() {
+    vector<Vertex> dfs = dfsTraversal();
+    sort(dfs.begin(), dfs.end(), Vertex::compareByFinishingTime);
+    Graph transpose = getTranspose();
+    bool visited[maxVertices + 1];
+    for (int i = 1; i <= maxVertices; i++) {
+        visited[i] = false;
+    }
+    for (int i = maxVertices - 1; i >= 0; i--) {
+        if (!visited[dfs[i].id]) {
+            transpose.dfsVisit(dfs[i].id, visited);
+            cout << endl;
+        }
+    }
+}
+
 int main() {
-    int graphSize = 9;
-    int edges = 9;
+    int graphSize = 6;
+    int edges = 7;
     Graph g = Graph(graphSize);
     for (int i = 0; i < edges; i++) {
         int u, v;
@@ -225,19 +273,9 @@ int main() {
         g.addEdge(u, v);
     }
     g.printAdjancyList();
-    vector<Vertex> v = g.dfsTraversal();
-    for (Vertex i : v) {
-        cout << "id = " << i.id <<" (" << i.discoveryTime << " | " << i.finishingTime << ")" << " \n";
-    }
-    cout << endl;
-    int *topo = g.topologicalSort();
-    for (int i = 0; i < graphSize; i++) {
-        cout << topo[i] << " ";
-    }
-    cout << endl;
+    g.printStronglyConnectedComponent();
     return 0;
 }
-
 
 Edge createEdge(int u, int v) {
     return createEdge(u, v, 0);

@@ -91,7 +91,6 @@ class Graph {
         void printAdjancyList();
         vector<Vertex> bfsTraversal(int source);
         vector<Vertex> dfsTraversal();
-        int *topologicalSort(); 
 };
 
 
@@ -117,7 +116,7 @@ bool Graph::hasEdgeBetween(int u, int v) {
 void Graph::addEdge(int u, int v) {
     if (!hasEdgeBetween(u, v)) {
         adjancyList[u].push_back(v);
-        //adjancyList[v].push_back(u);
+        adjancyList[v].push_back(u);
         Edge e = createEdge(u, v, 0);
         edges.push_back(e);
     }
@@ -204,17 +203,6 @@ void Graph::dfsVisit(int u, int &time, Vertex *vertices) {
     vertices[u].finishingTime = time;
 }
 
-int *Graph::topologicalSort() {
-    vector<Vertex> dfsOrder = dfsTraversal();
-    sort(dfsOrder.begin(), dfsOrder.end(), Vertex::compareByFinishingTime);
-    int *vertices = new int[maxVertices];
-    int j = maxVertices - 1;
-    for (Vertex v : dfsOrder) {
-        vertices[j--] = v.id;
-    }
-    return vertices;
-}
-
 int main() {
     int graphSize = 9;
     int edges = 9;
@@ -226,15 +214,6 @@ int main() {
     }
     g.printAdjancyList();
     vector<Vertex> v = g.dfsTraversal();
-    for (Vertex i : v) {
-        cout << "id = " << i.id <<" (" << i.discoveryTime << " | " << i.finishingTime << ")" << " \n";
-    }
-    cout << endl;
-    int *topo = g.topologicalSort();
-    for (int i = 0; i < graphSize; i++) {
-        cout << topo[i] << " ";
-    }
-    cout << endl;
     return 0;
 }
 
