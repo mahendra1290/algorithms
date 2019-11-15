@@ -13,7 +13,6 @@ enum VertexAttributes {
 
 class Vertex {
     public:
-        
         int id;
         int color;
         int distance;
@@ -56,7 +55,6 @@ Vertex *Vertex::createVertexListFor(int numberOfVertices) {
     return vertices;
 }
 
-
 bool Vertex::compareByDiscoveryTime(Vertex &v, Vertex &u) {
     return (v.discoveryTime < u.discoveryTime);
 }
@@ -65,26 +63,26 @@ bool Vertex::compareByFinishingTime(Vertex &v, Vertex &u) {
     return (v.finishingTime < u.finishingTime);
 }
 
-
 struct Edge {
     int u;
     int v;
     int weight;
+
+    Edge createEdge(int u, int v, int weight);
+    Edge createEdge(int u, int v);
 };
-
-Edge createEdge(int u, int v, int weight);
-
-Edge createEdge(int u, int v);
 
 class Graph {
     protected:
         vector<int> *adjancyList;
         int maxVertices;
+        const bool isWeighted;
         void dfsVisit(int u, int &time, Vertex *vertices);
+        vector<Edge> edges;
     public:
         void dfsVisit(int u, bool visited[]);
         Graph();
-        Graph(int maxVertices);
+        Graph(int maxVertices, bool isWeighted);
         bool hasEdgeBetween(int u, int v);
         void addEdge(int u, int v);
         void printAdjancyList();
@@ -95,12 +93,12 @@ class Graph {
 };
 
 
-Graph::Graph() {
+Graph::Graph() : isWeighted(false) {
     adjancyList = new vector<int>[GRAPH_MAX_SIZE];
     maxVertices = GRAPH_MAX_SIZE;
 }
 
-Graph::Graph(int maxVertices) {
+Graph::Graph(int maxVertices, bool isWeighted = false) : isWeighted(isWeighted) {
     this->maxVertices = maxVertices;
     adjancyList = new vector<int>[maxVertices + 1];
 }
@@ -205,7 +203,6 @@ void Graph::dfsVisit(int u, bool visited[]) {
     }
 }
 
-
 class DirectedGraph : public Graph {
     public:
         DirectedGraph()
@@ -215,12 +212,24 @@ class DirectedGraph : public Graph {
         : Graph(maxVertices) { }
 
         void addEdge(int u, int v) {
+            if (isWeighted) {
+                cout << "expected weight but not provided";
+                return;
+            }
             if (!hasEdgeBetween(u, v)) {
                 adjancyList[u].push_back(v);
+                edges.push_back(createEdge(u, v));
             }
         }
 
-        int *topologicalSort(); 
+        void addEdge(int u, int v, int w) {
+            if (isWeighted) {
+                adjancyList[u].push_back(v);
+                edges.push_back(createEdge(u, v, w));
+            }
+        }
+
+        int *topologicalSort();
         DirectedGraph getTranspose();
         void printStronglyConnectedComponent();
 };
@@ -276,6 +285,13 @@ class UndirectedGraph : public Graph {
                 adjancyList[v].push_back(u);
             }
         }
+
+        void addEdge(int u, int v, int w) {
+            if (isWeighted) {
+                adjancyList[u].push_back(v);
+                adjancyList[v].push_back(u);
+            }
+        }
 };
 
 int main() {
@@ -291,8 +307,6 @@ int main() {
     }
     return 0;
 }
-
-
 
 Edge createEdge(int u, int v) {
     return createEdge(u, v, 0);
