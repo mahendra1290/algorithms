@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#include "MinPriorityQueue.cpp"
 
 using namespace std;
 
@@ -32,6 +33,20 @@ struct Vertex {
     int finishingTime;
     bool isVisited;
 };
+
+struct VertexPrims {
+    int id;
+    int key;
+    int predecessor;
+};
+
+bool compareByKey(VertexPrims &v1, VertexPrims &v2) {
+    return v1.key < v2.key;
+}
+
+bool equals(VertexPrims &v1, VertexPrims &v2) {
+    return v1.id == v2.id;
+}
 
 Vertex createVertex(int key) {
     Vertex v;
@@ -117,7 +132,8 @@ class WeightedGraph {
         vector<Edge> edges;
         vector<Vertex> createVertexList();
         void dfsUtil(int src, int &time, bool *visited, vector<Vertex> &dfs);
-
+        int getWeight(int src, int dest);
+        
     public:
         WeightedGraph(int numberOfVertices);
         void addEdge(int u, int v, int w = 0);
@@ -129,6 +145,7 @@ class WeightedGraph {
         vector<Vertex> dfsTraversal(int src);
         void topologicalSort();
         WeightedGraph getMinimumSpanningKruskal();
+        WeightedGraph getMinimumSpanningPrims();
 };
 
 WeightedGraph::WeightedGraph(int numberOfVertices) {
@@ -237,7 +254,6 @@ vector<Vertex> WeightedGraph::createVertexList() {
     return vertices;
 }
 
-
 WeightedGraph WeightedGraph::getMinimumSpanningKruskal() {
     WeightedGraph mst(numberOfVertices);
     sort(edges.begin(), edges.end(), compareEgde);
@@ -249,6 +265,52 @@ WeightedGraph WeightedGraph::getMinimumSpanningKruskal() {
         }
     }
     return mst;
+}
+
+WeightedGraph WeightedGraph::getMinimumSpanningPrims() {
+    WeightedGraph mst(numberOfVertices);
+    vector<VertexPrims> vertices;
+    for (int i = 0; i < numberOfVertices; i++) {
+        VertexPrims v;
+        v.id = i;
+        v.key = INFINITE;
+        v.predecessor = NIL;
+        vertices.push_back(v);
+    }
+    vertices[0].key = 0;
+    PriorityQueue<VertexPrims> prioQueue(vertices, compareByKey, equals);
+    bool inQueue[numberOfVertices];
+    for (int i = 0; i < numberOfVertices; i++) {
+        inQueue[i] = true;
+    }
+    while (!prioQueue.isEmpty()) {
+        VertexPrims u = prioQueue.extractMin();
+        inQueue[u.id] = false;
+        for (int v : adjancyList[u.id]) {
+            if (inQueue[v] && getWeight(u.id , v) < vertices[v].key) {
+                VertexPrims temp = vertices[v];
+                temp.key = getWeight(u.id, v);
+                prioQueue.decreaseKey(vertices[v], temp);
+                vertices[v].key = getWeight(u.id, v);
+                vertices[v].predecessor = u.id;
+            }
+        }
+    }
+    for (VertexPrims ver : vertices) {
+        if (ver.predecessor != NIL) {
+            mst.addEdge(ver.id, ver.predecessor);
+        }
+    }
+    return mst;
+}
+
+int WeightedGraph::getWeight(int src, int dest) {
+    for (Edge e : edges) {
+        if (e.src == src && e.dest == dest) {
+            return e.weight;
+        }
+    }
+    return INFINITE;
 }
 
 int main() {
@@ -268,7 +330,7 @@ int main() {
     // for (Vertex i : v) {
     //     printVertex(i);
     // }
-    WeightedGraph mst = graph.getMinimumSpanningKruskal();
+    WeightedGraph mst = graph.getMinimumSpanningPrims();
     mst.printAdjancyList();
     //graph.dfsTraversal();
 }
