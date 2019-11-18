@@ -54,6 +54,6 @@ void merge(int arr[], int start, int mid, int end) {
 
 void copyArray(int source[], int destination[], int fromIndex, int upToIndex) {
     for (int i = fromIndex; i < upToIndex; i++) {
-        source[i - fromIndex] = destination[i];
+        destination[i - fromIndex] = source[i];
     }
 }
