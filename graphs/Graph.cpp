@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int GRAPH_MAX_SIZE = 100;
+int GRAPH_DEFAULT_SIZE = 100;
 
 enum VertexAttributes {
     WHITE = 0,
@@ -94,8 +94,8 @@ class Graph {
 
 
 Graph::Graph() : isWeighted(false) {
-    adjancyList = new vector<int>[GRAPH_MAX_SIZE];
-    maxVertices = GRAPH_MAX_SIZE;
+    adjancyList = new vector<int>[GRAPH_DEFAULT_SIZE];
+    maxVertices = GRAPH_DEFAULT_SIZE;
 }
 
 Graph::Graph(int maxVertices, bool isWeighted = false) : isWeighted(isWeighted) {
