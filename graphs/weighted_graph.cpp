@@ -40,13 +40,25 @@ struct VertexPrims {
     int predecessor;
 };
 
-bool compareByKey(VertexPrims &v1, VertexPrims &v2) {
-    return v1.key < v2.key;
-}
+struct VertexPrimsUtil {
+    int compare(VertexPrims v1, VertexPrims v2) {
+        if (v1.key < v2.key) {
+            return -1;
+        }
+        else if (v1.key > v2.key) {
+            return 1;
+        }
+        return 0;
+    }
+    
+    int getKey(VertexPrims v) {
+        return v.key;
+    }
 
-bool equals(VertexPrims &v1, VertexPrims &v2) {
-    return v1.id == v2.id;
-}
+    void setKey(VertexPrims &v, int newKey) {
+        v.key = newKey;
+    }
+};
 
 Vertex createVertex(int key) {
     Vertex v;
@@ -65,7 +77,7 @@ void printVertex(Vertex v) {
         cout << "distance -> " << v.distance << "\n";
     }
     if (v.discoveryTime != NIL) {
-        cout << "discoveryTime -> " << v.discoveryTime << "\n";
+        cout << "discoveryTime ->" << v.discoveryTime << "\n";
         cout << "finishingTime -> " << v.finishingTime << "\n";
     }
 }
@@ -93,7 +105,7 @@ class DisJointSet {
         }
         int find(int a);
         void doUnion(int a, int b);
-};
+}
 
 int DisJointSet::find(int a) {
     int parent = arr[a];
@@ -278,7 +290,7 @@ WeightedGraph WeightedGraph::getMinimumSpanningPrims() {
         vertices.push_back(v);
     }
     vertices[0].key = 0;
-    PriorityQueue<VertexPrims> prioQueue(vertices, compareByKey, equals);
+    PriorityQueue<VertexPrims, VertexPrimsUtil> prioQueue(vertices);
     bool inQueue[numberOfVertices];
     for (int i = 0; i < numberOfVertices; i++) {
         inQueue[i] = true;
@@ -289,8 +301,7 @@ WeightedGraph WeightedGraph::getMinimumSpanningPrims() {
         for (int v : adjancyList[u.id]) {
             if (inQueue[v] && getWeight(u.id , v) < vertices[v].key) {
                 VertexPrims temp = vertices[v];
-                temp.key = getWeight(u.id, v);
-                prioQueue.decreaseKey(vertices[v], temp);
+                prioQueue.decreaseKey(v, getWeight(u.id, v));
                 vertices[v].key = getWeight(u.id, v);
                 vertices[v].predecessor = u.id;
             }

@@ -2,13 +2,62 @@
 
 using namespace std;
 
-template<class T>
+// class Vertex : Comparable<Vertex> {
+//     int id;
+//     public:
+//     int key;
+//         Vertex(int id, int key) {
+//             this->id = id;
+//             this->key = key;
+//         }
+//         int compareTo(Vertex v) {
+//             if (key < v.key)
+//                 return -1;
+//             else if (key > v.key)
+//                 return 1;
+//             return 0;
+//         }
+// };
+
+// struct CompareVertex {
+//     int compare(Vertex v1, Vertex v2) {
+//         if (v1.key < v2.key) {
+//             return -1;
+//         }
+//         else if (v1.key > v2.key) {
+//             return 1;
+//         }
+//         return 0;
+//     }
+    
+//     int getKey(Vertex v) {
+//         return v.key;
+//     }
+
+//     void setKey(Vertex &v, int newKey) {
+//         v.key = newKey;
+//     }
+
+// };
+
+struct CompareInt {
+    int compare(int v1, int v2) {
+        if (v1 < v2) {
+            return -1;
+        }
+        else if (v1 > v2) {
+            return 1;
+        }
+        return 0;
+    }
+};
+
+template<class T, class F>
 class PriorityQueue {
     vector<T> arr;
+    F util;
     int length;
     int heapSize;
-    bool (*compareFunc)(T &elem1, T &elem2);
-    bool (*equalityFunc)(T &elem1, T &elem2);
     static const int DEFAULT_SIZE = 100;
     
     static int getParent(int i) {
@@ -26,60 +75,41 @@ class PriorityQueue {
         return (2 * i + 1) - 1;
     }
 
+    int getKey(int index);
     public:
-        PriorityQueue(vector<T> arr, 
-                    bool (*compare)(T &v1, T &v2),
-                    bool (*equal)(T &v1, T &v2));
-        void setCompareFunction(bool (*compare)(T &elem1, T &elem2));
-        void setEqualityFunction(bool (*equal)(T &elem1, T &elem2));       
+        PriorityQueue(vector<T> arr);      
         T extractMin();
-        //int maximum();
-        void decreaseKey(T elem, T newElem);
-        bool compare(T v1, T v2);
+        void decreaseKey(int index, int newKey);
+        int compare(T obj1, T obj2);
         
         bool isEmpty();
         void buildMinHeap();
         void minHeapify(int i);
 
-        void printHeap(void (*printFunc)(T &v));
+        void printHeap();
 };
 
-template<class T>
-PriorityQueue<T>::PriorityQueue(vector<T> arr, 
-        bool (*compare)(T &v1, T &v2),
-        bool (*equal)(T &v1, T &v2)) {
-    compareFunc = compare;
-    equalityFunc = equal;
+template<class T, class F>
+PriorityQueue<T, F>::PriorityQueue(vector<T> arr) {
     this->arr = arr;
     length = arr.size();
     heapSize = length;
+    this->util = util;
     buildMinHeap();
 }
 
-template<class T>
-void PriorityQueue<T>::setCompareFunction(bool (*compare)(T &elem1, T &elem2)) {
-    compareFunc = compare;
+template<class T, class F>
+int PriorityQueue<T, F>::compare(T v1, T v2) {
+    return util.compare(v1, v2);
 }
 
-template<class T>
-void PriorityQueue<T>::setEqualityFunction(bool (*equal)(T &elem1, T &elem2)) {
-    equalityFunc = equal;
-}
-
-
-
-template<class T>
-bool PriorityQueue<T>::compare(T v1, T v2) {
-    return (*compareFunc)(v1, v2);
-}
-
-template<class T>
-bool PriorityQueue<T>::isEmpty() {
+template<class T, class F>
+bool PriorityQueue<T, F>::isEmpty() {
     return heapSize == 0;
 }
 
-template<class T>
-T PriorityQueue<T>::extractMin() {
+template<class T, class F>
+T PriorityQueue<T, F>::extractMin() {
     T minimum = arr[0];
     arr[0] = arr[heapSize - 1];
     heapSize--;
@@ -87,46 +117,40 @@ T PriorityQueue<T>::extractMin() {
     return minimum;
 }
 
-// int PriorityQueue::maximum() {
-//     return arr[0];
-// }
+template<class T, class F>
+int PriorityQueue<T, F>::getKey(int index) {
+    return util.getKey(arr[index]);
+}
 
-
-template<class T>
-void PriorityQueue<T>::decreaseKey(T elem, T newElem) {
-    if (compareFunc(newElem, elem)) {
-        int i = 0;
-        for (i = 0; i < arr.size(); i++) {
-            if (equalityFunc(elem, arr[i])) {
-                arr[i] = newElem;
-                break;
-            }
-        }
-        while (i > 0 && !compareFunc(arr[getParent(i)], arr[i])) {
-            swap(arr[getParent(i)], arr[i]);
-            i = getParent(i);
+template<class T, class F>
+void PriorityQueue<T, F>::decreaseKey(int index, int newKey) {
+    if (getKey(index > newKey)) {
+        util.setKey(arr[index], newKey);
+        while (index > 0 && compare(arr[getParent(index)], arr[index]) == 1) {
+            swap(arr[index], arr[getParent(index)]);
+            index = getParent(index);
         }
     }
 }
 
-template<class T>
-void PriorityQueue<T>::buildMinHeap() {
+template<class T, class F>
+void PriorityQueue<T, F>::buildMinHeap() {
     int len = arr.size();
     for (int i = len/2 - 1; i >= 0; i--) {
         minHeapify(i);
     }
 }
 
-template<class T>
-void PriorityQueue<T>::minHeapify(int i) {
+template<class T, class F>
+void PriorityQueue<T, F>::minHeapify(int i) {
     int len = arr.size();
     int left = getLeft(i);
     int right = getRight(i);
     int smallest = i;
-    if (left < len && compare(arr[left], arr[right]) ) {
+    if (left < len && compare(arr[left], arr[smallest]) == -1 ) {
         smallest = left;
     }
-    if (right < len && compare(arr[right], arr[smallest]) ) {
+    if (right < len && compare(arr[right], arr[smallest]) == -1 ) {
         smallest = right;
     }
     if (smallest != i) {
@@ -135,11 +159,31 @@ void PriorityQueue<T>::minHeapify(int i) {
     }
 }
 
-template<class T>
-void PriorityQueue<T>::printHeap(void (*printFunc)(T &v)) {
+template<class T, class F>
+void PriorityQueue<T, F>::printHeap() {
     for (int i = 0; i < heapSize; i++) {
-        (*printFunc)(arr[i]);
+        cout << arr[i].key << " "; 
     }
     cout << endl;
 }
 
+// int main() {
+//     vector<Vertex> v;
+//     for (int i = 0; i < 5; i++) {
+//         int key;
+//         cin >> key;
+//         Vertex vertex(i, key);
+//         v.push_back(vertex);
+//     }
+//     PriorityQueue<Vertex, CompareVertex> que(v);
+//     que.printHeap();
+//     for (int i = 0; i < 5; i++) {
+//         int ind, key;
+//         cin >> ind >> key;
+//         que.decreaseKey(ind, key);
+//         que.printHeap();
+//         que.extractMin();
+//         que.printHeap();
+//     }
+//     return 0;
+// }
