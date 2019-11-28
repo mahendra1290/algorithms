@@ -56,6 +56,7 @@ template<class T, class F>
 class PriorityQueue {
     vector<T> arr;
     F util;
+    unordered_map<
     int length;
     int heapSize;
     static const int DEFAULT_SIZE = 100;

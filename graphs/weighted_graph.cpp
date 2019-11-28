@@ -105,7 +105,7 @@ class DisJointSet {
         }
         int find(int a);
         void doUnion(int a, int b);
-}
+};
 
 int DisJointSet::find(int a) {
     int parent = arr[a];
@@ -299,10 +299,10 @@ WeightedGraph WeightedGraph::getMinimumSpanningPrims() {
         VertexPrims u = prioQueue.extractMin();
         inQueue[u.id] = false;
         for (int v : adjancyList[u.id]) {
-            if (inQueue[v] && getWeight(u.id , v) < vertices[v].key) {
-                VertexPrims temp = vertices[v];
-                prioQueue.decreaseKey(v, getWeight(u.id, v));
-                vertices[v].key = getWeight(u.id, v);
+            int weight = getWeight(u.id, v);
+            if (inQueue[v] && weight < vertices[v].key) {
+                prioQueue.decreaseKey(v, weight);
+                vertices[v].key = weight;
                 vertices[v].predecessor = u.id;
             }
         }
